@@ -1,0 +1,21 @@
+from product import views
+from django.urls import path
+
+
+
+urlpatterns = [
+    path('products/search/', views.search),
+    path('products/<slug:category_slug>/<slug:product_slug>/', views.ProductDetail.as_view()),
+    path('products/<slug:category_slug>/', views.CategoryDetail.as_view()),
+    path('products/', views.AllProductsList.as_view()),
+    path('categories/', views.AllCategoriesList.as_view()),
+    path('admin/products/', views.ProductListCreateView.as_view()),
+    path('admin/products/<int:pk>/', views.ProductRetrieveUpdateDestroyView.as_view()),
+    path('admin/categories/', views.CategoryListCreateView.as_view()),
+    path('admin/categories/<int:pk>/', views.CategoryRetrieveUpdateDestroyView.as_view()),
+
+    
+
+
+
+]
