@@ -1,6 +1,6 @@
 from product import views
 from django.urls import path
-
+from .views import is_admin
 
 
 urlpatterns = [
@@ -13,7 +13,7 @@ urlpatterns = [
     path('admin/products/<int:pk>/', views.ProductRetrieveUpdateDestroyView.as_view()),
     path('admin/categories/', views.CategoryListCreateView.as_view()),
     path('admin/categories/<int:pk>/', views.CategoryRetrieveUpdateDestroyView.as_view()),
-
+    path('is_admin/', is_admin),
     
 
 

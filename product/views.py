@@ -1,16 +1,15 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from django.http import Http404
 from .serializers import CategorySerializer, ProductSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Product, Category
+from .models import Product, Category, Size
 from django.db.models import Q
 from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.parsers import MultiPartParser
-
+from rest_framework.decorators import api_view, permission_classes
+from django.core.cache import cache
 
 class AllProductsList(generics.ListAPIView):
     queryset = Product.objects.all()
@@ -64,7 +63,12 @@ class ProductListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         category_slug = self.request.data.get('category')
         category = Category.objects.get(slug=category_slug)
-        serializer.save(category=category)
+        sizes_data = self.request.data.get('sizes')
+        product = serializer.save(category=category)
+
+        if sizes_data:
+            sizes = [Size.objects.get_or_create(name=size['name'])[0] for size in sizes_data]
+            product.sizes.set(sizes)
 
 
 
@@ -73,6 +77,7 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = (IsAdminUser,)
+
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -92,3 +97,18 @@ class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategorySerializer
     permission_classes = (IsAdminUser,)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def is_admin(request):
+    is_admin = IsAdminUser().has_permission(request, None)
+    cache_key = f'is_admin:{request.user.pk}'
+    cache.set(cache_key, is_admin, timeout=60 * 5) # кэш на 5 минут
+    return Response({'is_admin': is_admin})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    cache_key = f'is_admin:{request.user.pk}'
+    cache.delete(cache_key) # удаление кэша
+    return Response({'success': True})
