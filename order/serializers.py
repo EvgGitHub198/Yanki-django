@@ -10,6 +10,7 @@ class MyOrderItemSerializer(serializers.ModelSerializer):
         fields = (
             "price",
             "product",
+            "size",
             "quantity",
         )
 
@@ -23,9 +24,11 @@ class MyOrderSerializer(serializers.ModelSerializer):
             "name",
             "email",
             "address",
+            "zipcode",
             "phone",
             "items",
             "paid_amount",
+            "status",
             "created_at"
         )
 
@@ -35,8 +38,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = (
             "price",
             "product",
+            "size",
             "quantity",
         )
+
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -49,9 +54,11 @@ class OrderSerializer(serializers.ModelSerializer):
             "name",
             "email",
             "address",
+            "zipcode",
             "phone",
             "items",
             "paid_amount",
+            "status",
             "created_at"
         )
     

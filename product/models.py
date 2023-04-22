@@ -32,7 +32,6 @@ class Size(models.Model):
        (XL, 'Extra Large'),
        (XXL, 'Double Extra Large'),
    )
-
    name = models.CharField(max_length=10, choices=CHOICES, blank=True, null=True)
 
    def __str__(self):
@@ -48,7 +47,6 @@ class Product(models.Model):
    sale = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
    main_image = models.ImageField(upload_to='uploads/main_images', blank=True, null=True)
    extra_images = models.ManyToManyField('ExtraImage', related_name='products', blank=True)
-   sizes = models.ManyToManyField(Size, blank=True)
    date_added = models.DateTimeField(auto_now_add=True)
 
    class Meta:
@@ -67,10 +65,11 @@ class ExtraImage(models.Model):
         return self.image.name
 
 
+class ProductSize(models.Model):
+    product = models.ForeignKey(Product, related_name='size_quantity', on_delete=models.CASCADE)
+    size = models.CharField(max_length=10, choices=Size.CHOICES)
+    quantity = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        return f'{self.product}'
 
-    #   def save(self, *args, **kwargs):
-    #     image_resize(self.image, 500, 500)
-    #     if not self.slug:
-    #         self.slug = slugify(self.name)
-    #     super().save(*args, **kwargs)

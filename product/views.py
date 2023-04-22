@@ -92,10 +92,31 @@ class CategoryListCreateView(generics.ListCreateAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminUser,)
+
+    def put(self, request, *args, **kwargs):
+        category = self.get_object()
+        serializer = self.get_serializer(category, data=request.data, partial=True)
+        if serializer.is_valid():
+            if 'category_image' not in request.data:
+                serializer.validated_data.pop('category_image', None)
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        return Response({'user_id': request.user.id})
+    
 
 
 @api_view(['GET'])

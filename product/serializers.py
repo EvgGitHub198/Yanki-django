@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Size, ExtraImage
+from .models import Product, Category, ProductSize, Size, ExtraImage
 from django.core.files.base import ContentFile
 
 
@@ -21,6 +21,10 @@ class ExtraImageSerializer(serializers.ModelSerializer):
         model = ExtraImage
         fields = ('id', 'image')
 
+
+
+
+
 class ProductSerializer(serializers.ModelSerializer):
     main_image = serializers.ImageField()
     category = serializers.SlugRelatedField(
@@ -28,7 +32,7 @@ class ProductSerializer(serializers.ModelSerializer):
         slug_field='slug'
     )
     extra_images = ExtraImageSerializer(many=True)
-    sizes = SizeSerializer(many=True)
+    sizes = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -46,6 +50,20 @@ class ProductSerializer(serializers.ModelSerializer):
             'sizes',
         )
         read_only_fields = ('id', 'get_absolute_url')
+  
+
+    def get_sizes(self, obj):
+        sizes = []
+        product_sizes = ProductSize.objects.filter(product=obj)
+        for product_size in product_sizes:
+            size = product_size.size
+            quantity = product_size.quantity
+            sizes.append({
+                'size': size,
+                'quantity': quantity,
+            })
+        return sizes
+
 
     def create(self, validated_data):
         sizes_data = validated_data.pop('sizes')
@@ -60,8 +78,8 @@ class ProductSerializer(serializers.ModelSerializer):
             instance.main_image.save(main_image.name, ContentFile(main_image.read()))
 
         for size_data in sizes_data:
-            size, created = Size.objects.get_or_create(**size_data)
-            instance.sizes.add(size)
+            size, created = Size.objects.get_or_create(**size_data['size'])
+            ProductSize.objects.create(product=instance, size=size, quantity=size_data['quantity'])
 
         for extra_image_data in extra_images_data:
             extra_image = ExtraImage.objects.create(image=extra_image_data['image'])
@@ -72,12 +90,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
 class CategorySerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, required=False)
-    category_image = serializers.ImageField()
+    category_image = serializers.ImageField(required=False)
     class Meta:
         model = Category
         fields = (
@@ -89,7 +104,7 @@ class CategorySerializer(serializers.ModelSerializer):
             'products',           
         )
     def create(self, validated_data):   
-       category_image = validated_data.pop('category_image', None)
+       category_image = validated_data.pop('category_image', 'None')
        instance = super().create(validated_data)
        if category_image:
            instance.category_image.save(category_image.name, ContentFile(category_image.read()))

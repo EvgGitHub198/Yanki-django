@@ -14,6 +14,7 @@ urlpatterns = [
     path('admin/categories/', views.CategoryListCreateView.as_view()),
     path('admin/categories/<int:pk>/', views.CategoryRetrieveUpdateDestroyView.as_view()),
     path('is_admin/', is_admin),
+    path('current_user/', views.CurrentUserView.as_view()),
     
 
 
