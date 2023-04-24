@@ -11,6 +11,7 @@ urlpatterns = [
     path('categories/', views.AllCategoriesList.as_view()),
     path('admin/products/', views.ProductListCreateView.as_view()),
     path('admin/products/<int:pk>/', views.ProductRetrieveUpdateDestroyView.as_view()),
+    path('admin/products/<int:product_id>/sizes/<str:size_name>/', views.ProductSizeDeleteView.as_view()),
     path('admin/categories/', views.CategoryListCreateView.as_view()),
     path('admin/categories/<int:pk>/', views.CategoryRetrieveUpdateDestroyView.as_view()),
     path('is_admin/', is_admin),

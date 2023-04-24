@@ -3,18 +3,20 @@ from django.http import Http404
 from .serializers import CategorySerializer, ProductSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Product, Category, Size
+from .models import Product, Category, ProductSize, Size
 from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.decorators import api_view, permission_classes
 from django.core.cache import cache
+
+
 
 class AllProductsList(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
+    
 class AllCategoriesList(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer    
@@ -57,18 +59,43 @@ def search(request):
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = (IsAdminUser,)
-    parser_classes = [MultiPartParser]
+    # permission_classes = (IsAdminUser,)
+    parser_classes = [MultiPartParser, JSONParser, FormParser]
 
-    def perform_create(self, serializer):
-        category_slug = self.request.data.get('category')
-        category = Category.objects.get(slug=category_slug)
-        sizes_data = self.request.data.get('sizes')
-        product = serializer.save(category=category)
+  
 
-        if sizes_data:
-            sizes = [Size.objects.get_or_create(name=size['name'])[0] for size in sizes_data]
-            product.sizes.set(sizes)
+
+class ProductSizeDeleteView(generics.DestroyAPIView):
+    # permission_classes = (IsAdminUser,)
+    queryset = ProductSize.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        product_id = kwargs['product_id']
+        size_name = kwargs['size_name']
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            size = Size.objects.get(name=size_name)
+        except Size.DoesNotExist:
+            return Response({"error": "Size not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            product_size = ProductSize.objects.get(product=product, size=size)
+            # Check if there are other sizes available for this product
+            other_sizes = ProductSize.objects.filter(product=product).exclude(id=product_size.id)
+            if other_sizes.exists():
+                product_size.delete()
+            else:
+                product.delete()
+        except ProductSize.DoesNotExist:
+            return Response({"error": "Product size not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"success": "Product size deleted"})
+
 
 
 
@@ -76,7 +103,20 @@ class ProductListCreateView(generics.ListCreateAPIView):
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = (IsAdminUser,)
+    # permission_classes = (IsAdminUser,)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
 
 
 class CategoryListCreateView(generics.ListCreateAPIView):
