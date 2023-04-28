@@ -158,7 +158,6 @@ class CurrentUserView(APIView):
         return Response({'user_id': request.user.id})
     
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def is_admin(request):
@@ -166,6 +165,7 @@ def is_admin(request):
     cache_key = f'is_admin:{request.user.pk}'
     cache.set(cache_key, is_admin, timeout=60 * 5) # кэш на 5 минут
     return Response({'is_admin': is_admin})
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

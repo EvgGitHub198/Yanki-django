@@ -6,4 +6,7 @@ urlpatterns = [
     path('my-orders/', views.MyOrdersList.as_view()), 
     path('admin/orders/', views.AdminOrderList.as_view()), 
     path('admin/orders/<int:pk>/', views.AdminOrderListDelete.as_view()), 
+    path('admin/orders/chart/', views.OrderChartView.as_view()),
+
+
 ]

@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Order
 from .serializers import OrderSerializer, MyOrderSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.db.models.functions import TruncHour
+from django.db.models import Sum
 
 
 @api_view(['POST'])
@@ -18,6 +19,7 @@ def checkout(request):
     user = request.user if request.user.is_authenticated else None #for non authenticated_users
     serializer = OrderSerializer(data=request.data)
     if serializer.is_valid():
+        print('проверка пройдена')
         # paid_amount = sum(item.get('quantity') * item.get('product').price for item in serializer.validated_data['items'])
         paid_amount = sum(item.get('quantity') * item.get('product').price for item in serializer.validated_data['items'])
         try:
@@ -74,3 +76,21 @@ class AdminOrderListDelete(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderChartView(APIView):
+    # permission_classes = [permissions.IsAdminUser]
+    def get(self, request, *args, **kwargs):
+        orders = Order.objects.annotate(
+            date_hour=TruncHour('created_at')
+        ).values(
+            'date_hour'
+        ).annotate(
+            total=Sum('paid_amount')
+        )
+        data = []
+        for order in orders:
+            date = order['date_hour'].strftime('%Y-%m-%d %H:%M:%S')
+            value = order['total']
+            data.append({'date': date, 'value': value})
+        return Response(data)

@@ -20,6 +20,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     paid_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PROCESSING)
+    
     class Meta:
         ordering = ['-created_at',]
 
@@ -30,7 +31,7 @@ class Order(models.Model):
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name='items', on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     size = models.CharField(max_length=10, blank=True, null=True)
     quantity = models.IntegerField(default=1)
