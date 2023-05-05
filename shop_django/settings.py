@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -167,11 +170,12 @@ REQUIRED_FIELDS = ['email']
 
 AUTH_USER_MODEL = 'auth.User'
 
+load_dotenv()
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465 
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'pocht4dlyas5ama@yandex.ru'
-EMAIL_HOST_PASSWORD = 'pzdlfyaztlmmeywy'
-DEFAULT_FROM_EMAIL = 'pocht4dlyas5ama@yandex.ru'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
