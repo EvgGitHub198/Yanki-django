@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'djoser',
     'product',
     'order',
+    'mail',
 ]
 
 MIDDLEWARE = [
@@ -165,3 +166,12 @@ DJOSER = {
 REQUIRED_FIELDS = ['email']
 
 AUTH_USER_MODEL = 'auth.User'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465 
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'pocht4dlyas5ama@yandex.ru'
+EMAIL_HOST_PASSWORD = 'pzdlfyaztlmmeywy'
+DEFAULT_FROM_EMAIL = 'pocht4dlyas5ama@yandex.ru'

@@ -1,3 +1,4 @@
+import random
 from rest_framework import generics, status
 from django.http import Http404
 from .serializers import CategorySerializer, ProductSerializer
@@ -122,7 +123,7 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUser,)
+    # permission_classes = (IsAdminUser,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -136,7 +137,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUser,)
+    # permission_classes = (IsAdminUser,)
 
     def put(self, request, *args, **kwargs):
         category = self.get_object()
@@ -148,6 +149,14 @@ class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
+class RandomProducts(APIView):
+    def get(self, request, format=None):
+        products = Product.objects.all()
+        random_products = random.sample(list(products), 4)
+        serializer = ProductSerializer(random_products, many=True)
+        return Response(serializer.data)
 
 
 
@@ -171,5 +180,7 @@ def is_admin(request):
 @permission_classes([IsAuthenticated])
 def logout(request):
     cache_key = f'is_admin:{request.user.pk}'
-    cache.delete(cache_key) # удаление кэша
+    cache.delete(cache_key)
     return Response({'success': True})
+
+
