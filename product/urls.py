@@ -7,6 +7,7 @@ urlpatterns = [
     path('products/search/', views.search),
     path('products/<slug:category_slug>/<slug:product_slug>/', views.ProductDetail.as_view()),
     path('products/<slug:category_slug>/', views.CategoryDetail.as_view()),
+    path('products_id/<int:pk>/', views.GetProductById.as_view()),
     path('random-products/', views.RandomProducts.as_view()),
     path('products/', views.AllProductsList.as_view()),
     path('categories/', views.AllCategoriesList.as_view()),
@@ -17,7 +18,7 @@ urlpatterns = [
     path('admin/categories/<int:pk>/', views.CategoryRetrieveUpdateDestroyView.as_view()),
     path('is_admin/', is_admin),
     path('current_user/', views.CurrentUserView.as_view()),
-    # path('forgot-password/', views.ForgotPasswordView.as_view()),
+    path('check-products/', views.CheckProductsAPIView.as_view(), name='check_products'),
 
 
 

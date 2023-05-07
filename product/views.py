@@ -60,14 +60,14 @@ def search(request):
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
     parser_classes = [MultiPartParser, JSONParser, FormParser]
 
-  
+
 
 
 class ProductSizeDeleteView(generics.DestroyAPIView):
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
     queryset = ProductSize.objects.all()
 
     def delete(self, request, *args, **kwargs):
@@ -99,12 +99,17 @@ class ProductSizeDeleteView(generics.DestroyAPIView):
 
 
 
+class GetProductById(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
 
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -123,7 +128,7 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -137,7 +142,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
     def put(self, request, *args, **kwargs):
         category = self.get_object()
@@ -159,6 +164,23 @@ class RandomProducts(APIView):
         return Response(serializer.data)
 
 
+class CheckProductsAPIView(APIView):
+    def post(self, request):
+        product_ids = request.data.get('products_id', [])  # Получение списка идентификаторов продуктов из запроса
+
+        # Проверка наличия продуктов в базе данных
+        existing_products = Product.objects.filter(id__in=product_ids).values_list('id', flat=True)
+
+        # Сравнение переданных идентификаторов с найденными в базе данных
+        missing_products = list(set(product_ids) - set(existing_products))
+
+        if missing_products:
+            # Если есть отсутствующие продукты, возвращаем ошибку
+            return Response({'error': f'Товары с идентификаторами {missing_products} не найдены в базе данных.'}, status=400)
+        else:
+            # Если все продукты найдены, возвращаем успешный результат
+            return Response({'message': 'Все продукты найдены в базе данных.'}, status=200)
+        
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]

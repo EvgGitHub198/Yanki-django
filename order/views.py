@@ -50,7 +50,7 @@ class MyOrdersList(APIView):
 
 class AdminOrderList(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     def get(self, request, format=None):
         orders = Order.objects.all()
         serializer = MyOrderSerializer(orders, many=True)
@@ -60,7 +60,7 @@ class AdminOrderList(APIView):
 
 class AdminOrderListDelete(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
     def get_object(self, pk):
         try:
@@ -111,6 +111,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from django.db.models import Avg
 
 class MonthSalesForecastView(APIView):
+
     def get(self, request, *args, **kwargs):
         # Получаем данные продаж за предыдущие месяцы
         start_date = datetime.now() - timedelta(days=120)
@@ -166,6 +167,7 @@ class MonthSalesForecastView(APIView):
 import numpy as np
 
 class YearSalesForecastView(APIView):
+
     def get(self, request, *args, **kwargs):
         # Получаем данные продаж за предыдущие месяцы
         start_date = datetime.now() - timedelta(days=120)
