@@ -5,10 +5,12 @@ from product.models import Product
 class Order(models.Model):
     PROCESSING = 'В сборке'
     SHIPPED = 'Отправлен'
+    ARCHIVED = 'В архиве'
 
     STATUS_CHOICES = (
         (PROCESSING , 'В сборке'),
         (SHIPPED, 'Отправлен'),
+        (ARCHIVED, 'В архиве'),
     )
 
     user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE, null=True, blank=True)
