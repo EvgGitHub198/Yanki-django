@@ -16,6 +16,10 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+
 
 
 User = get_user_model()
@@ -115,3 +119,70 @@ def reset_password(request, key):
 
 
 
+
+
+
+from rest_framework.generics import ListCreateAPIView, UpdateAPIView
+from django.contrib.auth.models import User
+from .serializers import UserSerializer
+from rest_framework.exceptions import NotFound
+
+
+    
+class UserProfileView(ListCreateAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return user
+        raise NotFound('User not found')
+
+    def list(self, request, *args, **kwargs):
+        # Реализация обработки метода GET
+        user = self.get_object()
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        # Реализация обработки метода POST
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        profile_data = {
+            'phone': self.request.data.get('phone'),
+            'index': self.request.data.get('index'),
+            'address': self.request.data.get('address'),
+            'full_name': self.request.data.get('full_name')
+        }
+        serializer.save(user=self.request.user, profile=profile_data)
+
+
+    
+class UserProfileUpdateView(UpdateAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return user
+        raise NotFound('User not found')
+
+    def put(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        profile_data = {
+            'phone': self.request.data.get('phone'),
+            'index': self.request.data.get('index'),
+            'address': self.request.data.get('address'),
+            'full_name': self.request.data.get('full_name')
+        }
+        serializer.save(profile=profile_data)

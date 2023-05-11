@@ -16,3 +16,15 @@ class SubMails(models.Model):
 
     def __str__(self):
         return self.email
+    
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    email = models.EmailField(blank=True, null=True)  # Добавлено новое поле email
+    phone = models.CharField(max_length=30)
+    index = models.CharField(max_length=30)
+    address = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.user.username
